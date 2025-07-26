@@ -4,6 +4,7 @@ package com.estudo.aws.api_reembolsos.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -56,17 +57,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/reembolsos/approve/**").hasRole("GESTOR")
-                .requestMatchers("/api/reembolsos/**").hasAnyRole("FUNCIONARIO", "GESTOR")
-                .anyRequest().authenticated()
-            )
+        .authorizeHttpRequests(auth -> auth
+        	    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+        	    .requestMatchers("/api/auth/**").permitAll()
+        	    .requestMatchers(HttpMethod.POST, "/api/comprovantes/upload").permitAll()
+        	    .requestMatchers(HttpMethod.GET, "/api/comprovantes/download/**").permitAll()
+        	    .requestMatchers("/api/reembolsos/approve/**").hasRole("GESTOR")
+        	    .requestMatchers("/api/reembolsos/**").hasAnyRole("FUNCIONARIO", "GESTOR")
+        	    .anyRequest().authenticated()
+        	)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }
